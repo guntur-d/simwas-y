@@ -17,7 +17,8 @@ var ref = {
         { type: 'text', title: 'Cttn Pengawas', wordWrap: true },
 
     ],
-    users: [{ user: 'Auditor01', role: 'auditor' }, { user: 'Dalnis01', role: 'auditor' }, { user: 'PengawasMutu01', role: 'pengawas' }],
+    users: [{ user: 'sysadmin', role: 'sysadmin' }, { user: 'Auditor01', role: 'auditor' }, { user: 'Dalnis01', role: 'auditor' }, { user: 'PengawasMutu01', role: 'pengawas' }],
+    role: null,
     ObjectID: (str) => {
         return str + (Math.floor(Date.now() / 1000)).toString(16)
     },
@@ -92,9 +93,17 @@ var ref = {
 
             ref.main = m.trust(ref.tabCreator('mainTable'))
 
-            m.redraw()
+
         }
 
+    },
+    controlText:null,
+    userlogout: () => {
+        
+        ref.userlogged = null
+        ref.role = null
+        ref.controlText = "Please Login"
+   
     },
 
     userlogin: () => {
@@ -104,9 +113,14 @@ var ref = {
         var onSubmit = (e) => {
             e.preventDefault()
             var el = document.getElementById(id)
+            console.log(el.value)
             ref.userlogged = el.value
+            ref.users.map(item=>{
+                if(item.user == ref.userlogged){ref.role=item.role}
+            })
             ref.state.user = null
-            m.redraw()
+            ref.controlText = null
+          //  m.redraw()
         }
 
 
@@ -114,15 +128,13 @@ var ref = {
         ), "Pilih User", id, onSubmit)
     },
 
-    userlogout: () => { ref.userlogged = null },
-    dashUpdate: (data) => {
-        var Obj = {}
-
-    },
+  
     getDataTab: (id) => {
         var oTable = document.getElementById(id);
 
         var rawdata = [...oTable.rows].map(t => [...t.children].map(u => u.innerText))
+        console.log(rawdata)
+
         if (rawdata.length < 3) {
             alert("Anda blm memasukkan Data")
             return null
@@ -136,10 +148,14 @@ var ref = {
 
         return data
     },
+
+    idAddRow: null,
+
     addrow: (id) => {
+        console.log(id)
 
-
-        if (typeof (id) !== "string") { id = "auditorTable" }
+        if (typeof (id) !== "string" || id == undefined) { id = ref.idAddRow }
+        console.log(id)
         var table = document.getElementById(id)
         //  console.log(table)
         if (table) {
@@ -151,8 +167,31 @@ var ref = {
             if (id == "auditorTable") {
                 for (var x = 0; x < 9; x++) {
 
-                    x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="false" style="background:grey;" > </td>'
-                        : tds += '<td contenteditable="true" > </td>'
+                    x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="false" style="background:grey;" ></td>'
+                        : tds += '<td contenteditable="true"></td>'
+
+                    row.innerHTML = tds
+
+                }
+            }
+
+            if (id == ref.tabReviewID && ref.role == "auditor") {
+                for (var x = 0; x < 10; x++) {
+
+                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 7 && x > 3 || x == 8 ?
+                        tds += '<td contenteditable="false" style="background:grey;"></td>' : tds += '<td contenteditable="true"></td>'
+
+
+                    row.innerHTML = tds
+
+                }
+            }
+
+            if (id == ref.tabReviewID && ref.role == "pengawas") {
+                for (var x = 0; x < 10; x++) {
+
+                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
+                        : tds += '<td contenteditable="false"  style="background:grey;"> </td>'
 
                     row.innerHTML = tds
 
@@ -180,13 +219,18 @@ var ref = {
         var idCase = ref.ObjectID('Case')
 
         var data = ref.getDataTab('auditorTable')
-       
-        if (data == null) return
+
+        console.log(data)
+
+        if (data.length == 0) return
 
         for (var x = 0; x < data.length; x++) {
             var del = false
-            for (var y = 0; y < data[x].length; y++) {
-                if (data[x][y].replace(/\s/g, '') === '') { del = true } else { break }
+            for (var y = 0; y < 9; y++) {
+                if (data[x][y].replace(/\s/g, '') !== '') {
+                    del = false
+                    break
+                } else { del = true }
             }
             if (del == true) {
                 data.splice(x, 1)
@@ -194,24 +238,26 @@ var ref = {
             }
 
         }
- 
+
 
         if (data) {
- 
+
             for (var x = 0; x < data.length; x++) {
                 data[x].push(idCase)
                 var row = ref.addrow("mainTable")
+                console.log(row)
                 for (var y = 0; y < data[x].length; y++) {
                     row.cells[y].innerText = data[x][y]
+                    row.cells[y].style.backgroundColor = '#ffef82'
                     if (y == 9) {
                         row.cells[y].style.display = 'none';
                     }
                 }
-
-
             }
 
- 
+
+            ref.localStorageSave()
+
             ref.state.control = null
             m.redraw()
         }
@@ -221,39 +267,35 @@ var ref = {
 
     },
 
+
     createNewCase: () => {
 
-        var content = ref.tabCreator("auditorTable")
-        //    console.log(content)
-        content += '<div class="buttons">'
-        content += '<button class="button is-primary" id="addRowAuditor" onclick="ref.addrow()">Tambah baris</button>'
+        ref.idAddRow = "auditorTable"
+        var content = ref.tabCreator(ref.idAddRow)
+
+        content += '<div class="box"><div class="buttons">'
+        content += '<button class="button is-primary" onclick="ref.addrow()">Tambah baris</button>'
         content += '<button class="button is-link" id="saveCase" onclick="ref.auditorSave()">Simpan</button>'
-        content += '</div>'
+        content += '</div></div>'
 
         ref.state.control = m.trust(content)
-
-
 
     },
     reviewCase: () => {
 
 
-
         var content = ref.openCasesTab()
-        console.log(content)
+
         ref.state.control = m.trust(content)
         m.redraw()
 
-
-
     },
 
-    openCasesTab: () => {
-
-        var header = ['id', 'temuan', 'rekomendasi', 'usulan TL', 'Tindak Lanjut', 'Pilih']
-        var temuan, rekomendasi, usulanTL, tindakLanjut, itemArr
-        temuan = rekomendasi = usulanTL = tindakLanjut = ''
+    getCases: () => {
         var itemArr = []
+        var temuan, rekomendasi, usulanTL, tindakLanjut, kekuranganTL
+        temuan = rekomendasi = usulanTL = tindakLanjut = kekuranganTL = ''
+        console.log(ref.dashData)
 
         ref.dashNumber.kasus.map(item => {
             ref.dashData.map(data => {
@@ -264,16 +306,22 @@ var ref = {
                     data.rekomendasi.replace(/\s/g, '') !== '' ? rekomendasi += data.rekomendasi + ", " : false
                     data.usulanTL.replace(/\s/g, '') !== '' ? usulanTL += data.usulanTL + ", " : false
                     data.tindakLanjut.replace(/\s/g, '') !== '' ? tindakLanjut += data.tindakLanjut + ", " : false
-
+                    data.kekuranganTL.replace(/\s/g, '') !== '' ? kekuranganTL += data.kekuranganTL + ", " : false
                 }
-
-
             })
 
-            itemArr.push([item, temuan.slice(0, -2), rekomendasi.slice(0, -2), usulanTL.slice(0, -2), tindakLanjut.slice(0, -2)])
+            itemArr.push([item, temuan.slice(0, -2), rekomendasi.slice(0, -2), usulanTL.slice(0, -2), tindakLanjut.slice(0, -2), kekuranganTL.slice(0, -2)])
             temuan = rekomendasi = usulanTL = tindakLanjut = ''
         })
+        return itemArr
+    },
 
+    openCasesTab: () => {
+
+        var header = ['id', 'temuan', 'rekomendasi', 'usulan TL', 'Tindak Lanjut', 'Kekurangan Tndk Ljt', 'Pilih']
+
+
+        var itemArr = ref.getCases()
 
 
         var content = '<div class="box">'
@@ -292,7 +340,8 @@ var ref = {
             })
 
             content += '<td><div class="buttons">'
-            content += '<button class="button is-primary reviewPengawas" onclick="ref.pengawasTable()" >Review</button>'
+            ref.role == "sysadmin" ? content += '<button class="button is-danger" onclick="ref.sysAdminDel()" >Hapus</button>' :
+                content += '<button class="button is-primary" onclick="ref.editorTable()" >Review/Edit</button>'
 
             content += '</div></td></tr>'
 
@@ -302,6 +351,60 @@ var ref = {
         content += '</tbody></table></div>'
         return content
 
+    },
+
+    sysAdminDel: (e) => {
+
+
+
+        e = e || window.event
+
+        var target = e.target;
+        while (target && target.nodeName !== "TR") {
+            target = target.parentNode
+        }
+
+        ref.idCase = target.cells[0].innerText
+        var mainTableEl = document.getElementById('mainTable')
+        if (mainTableEl) {
+            var len = mainTableEl.rows.length
+            for (var x = 2; x < len; x++) {
+                if (mainTableEl.rows[x].cells[9].innerText == ref.idCase) {
+                    mainTableEl.deleteRow(x)
+                    x--
+                    len--
+
+                }
+            }
+        }
+
+        ref.localStorageSave()
+
+        ref.state.control = null
+        m.redraw()
+    },
+
+    localStorageSave: () => {
+        var mainTableEl = document.getElementById('mainTable')
+
+        var rawdata = [...mainTableEl.rows].map(t => [...t.children].map(u => u.innerText))
+        var stydata = [...mainTableEl.rows].map(t => [...t.children].map(u => u.style.backgroundColor))
+
+        var data = []
+        for (var x = 2; x < rawdata.length; x++) {
+            data.push(rawdata[x])
+        }
+
+
+        for (var x = 0; x < data.length; x++) {
+            data[x].push(stydata[x + 2][0])
+
+        }
+
+
+        var obj = { main: data }
+
+        localStorage.setItem('simwasdata', JSON.stringify(obj));
     },
 
 
@@ -368,8 +471,7 @@ var ref = {
             }
 
             var unique = cases.filter(onlyUnique);
-            console.log(unique)
-            console.log(ref.dashData)
+
             var temuanNum, reccNum, uTLNum, TLNum, KTLNum, statusNum
             temuanNum = reccNum = uTLNum = TLNum = KTLNum = statusNum = 0
             ref.dashData.map(item => {
@@ -398,21 +500,15 @@ var ref = {
                 dashEl.innerHTML = content
 
             }
-
-
-
-
         }
-
-
     },
 
     idCase: null,
     tabReviewID: null,
 
-    pengawasTable: (e) => {
+    editorTable: (e) => {
 
-      //  e.preventDefault()
+        //  e.preventDefault()
 
         ref.state.control = null
         e = e || window.event
@@ -424,12 +520,17 @@ var ref = {
 
         ref.idCase = target.cells[0].innerText
 
-        ref.tabReviewID = ref.ObjectID("Review")
+        ref.role == "pengawas" ? ref.tabReviewID = ref.ObjectID("Review") : ref.tabReviewID = ref.ObjectID("Edit")
+
+        ref.idAddRow = ref.tabReviewID
+
+
         var table = ref.tabCreator(ref.tabReviewID)
-        table += '<div class="buttons">'
-        table += '<button class="button is-primary" id="addRowPengawas">Tambah baris</button>'
+
+        table += '<div class="box"><div class="buttons">'
+        table += '<button class="button is-primary" onclick="ref.addrow()">Tambah baris</button>'
         table += '<button class="button is-link" id="saveReview" onclick="ref.saveReview()">Simpan</button>'
-        table += '</div>'
+        table += '</div></div>'
 
         ref.state.control = m.trust(table)
         m.redraw()
@@ -438,24 +539,50 @@ var ref = {
 
     },
     mainTabRowIndex: null,
+    caseClose: false,
 
     saveReview: (e) => {
-     //   e.preventDefault()
+        //   e.preventDefault()
+
 
         var reviewTab = document.getElementById(ref.tabReviewID)
-        if (reviewTab) {  
+        if (reviewTab) {
 
             var lenRT = reviewTab.rows.length
             var el = document.getElementById('pilihStatus')
-            console.log()
-            for (var x = 2; x < lenRT; x++) {
+            if (el) {
+                for (var x = 2; x < lenRT; x++) {
 
 
-                if (reviewTab.rows[x].cells[6].innerText.replace(/\s/g, '') !== '') {
-                    reviewTab.rows[x].cells[6].innerText = el.options[el.selectedIndex].text
+                    if (reviewTab.rows[x].cells[6].innerText.replace(/\s/g, '') !== '') {
+                        reviewTab.rows[x].cells[6].innerText = el.options[el.selectedIndex].text
+
+                    }
 
                 }
+
+                el.options[el.selectedIndex].text == "Selesai Ditindaklanjuti" ? ref.caseClose = true : false
             }
+
+            var data = ref.getDataTab(ref.tabReviewID)
+            for (var x = 0; x < data.length; x++) {
+                var del = false
+                for (var y = 0; y < 9; y++) {
+                    if (data[x][y].replace(/\s/g, '') !== '') {
+                        del = false
+                        break
+                    } else { del = true }
+                }
+                if (del == true) {
+                    data.splice(x, 1)
+                    x--
+                }
+
+            }
+
+            console.log(data)
+
+
         }
         var mainTab = document.getElementById("mainTable")
         if (mainTab) {
@@ -474,21 +601,31 @@ var ref = {
 
                 }
             }
-            for (var x = 2; x < lenRT; x++) {
-                var newrow = mainTab.insertRow(ref.mainTabRowIndex + x - 2)
+            for (var x = 0; x < data.length; x++) {
+                var newrow = mainTab.insertRow(ref.mainTabRowIndex + x)
                 for (var i = 0; i < 10; i++) {
+
                     var newcell = newrow.insertCell()
-                    newcell.innerText = reviewTab.rows[x].cells[i].innerText
+                    newcell.innerText = data[x][i]
+                    var color = null
+                    ref.caseClose ? color = '#b8f1b0' : ref.role == "pengawas" ? color = '#79dae8' : color = '#ffef82'
+                    newcell.style.backgroundColor = color
                     if (i == 9) {
                         newcell.style.display = 'none'
                     }
                 }
 
+
+
             }
+
+
 
         }
 
+        ref.localStorageSave()
 
+        ref.caseClose ? ref.caseClose = false : false
         ref.tabReviewID = null
         ref.state.control = null
         ref.mainTabRowIndex = null
@@ -504,8 +641,8 @@ var ref = {
 const control = {
 
     onupdate: () => {
- 
- 
+
+
         var el = document.getElementById(ref.tabReviewID)
         if (el) {
 
@@ -522,8 +659,14 @@ const control = {
 
                     for (var x = 0; x < 10; x++) {
 
-                        x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
-                            : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
+                        if (ref.role == "pengawas") {
+                            x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
+                                : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
+                        } else {
+                            x < 4 || x == 7 ? tds += '<td contenteditable="true" > </td>'
+                                : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
+                        }
+ 
 
                         row.innerHTML = tds
 
@@ -533,9 +676,9 @@ const control = {
                     row.cells[1].innerText = item.rekomendasi
                     row.cells[2].innerText = item.usulanTL
                     row.cells[3].innerText = item.tindakLanjut
-                    row.cells[4].outerHTML = '<td contenteditable="true" min=0 max=100> </td>'
+                    ref.role == "pengawas" ? row.cells[4].outerHTML = '<td contenteditable="true" min=0 max=100> </td>' : row.cells[4].innerHTML = item.bobot
                     row.cells[5].innerText = item.kekuranganTL
-                    row.cells[6].innerHTML = dropdown
+                    ref.role == "pengawas" ? row.cells[6].innerHTML = dropdown : row.cells[6].innerHTML = item.status
                     row.cells[7].innerText = item.cttnAuditor
                     row.cells[8].innerText = item.cttnPengawas
                     row.cells[9].innerText = ref.tabReviewID
@@ -558,31 +701,31 @@ const control = {
             }
         }
 
-        // var bttnSaveReview = document.getElementById('saveReview')
-        // if (bttnSaveReview) {
+       
 
-        //     bttnSaveReview.onclick = ref.saveReview
-
-
-        // }
+     
 
     },
 
+   
+
+
+ 
+
     view: () => {
+        console.log(ref.role)
 
-        var role = null
-        if (ref.userlogged) {
-            ref.users.map(item => {
-                item.user == ref.userlogged ? role = item.role : false
-            })
-        }
-
-
+        console.log(ref.userlogged)
+     
 
         return m(".div",
 
-            role == null ? null : role == 'auditor' ? m("button", { class: "button", onclick: ref.createNewCase }, "Kasus Baru") :
-                m("button", { class: "button", onclick: ref.reviewCase }, "Review"),
+            ref.role == null ? ref.controlText : ref.role == 'auditor' ?
+                [m("button", { class: "button is-primary", onclick: ref.createNewCase }, "Kasus Baru"),
+                m("span", " "),
+                m("button", { class: "button is-info is-outlined", onclick: ref.reviewCase }, "Edit")] : ref.role == "pengawas" ?
+                    m("button", { class: "button is-info is-outlined", onclick: ref.reviewCase }, "Review") :
+                    m("button", { class: "button is-danger", onclick: ref.reviewCase }, "Hapus"),
 
             ref.makeModal('control', 'width: 90%;'))
 
@@ -599,7 +742,7 @@ const user = {
 
     onupdate: () => {
         var el = document.getElementById('username')
-        ref.userlogged ? el.innerHTML = "User: " + ref.userlogged : el.innerHTML = null
+        ref.userlogged ? el.innerHTML = "User: " + ref.userlogged : el.innerHTML = "Please Login"
 
     },
 
@@ -630,24 +773,47 @@ const dashboard = {
 
     }
 
-
 }
 
 const main = {
 
 
+    oninit: () => {
+        ref.main == null ? ref.tabHeader() : null
+
+    },
+    oncreate: () => {
+
+        var mainTable = JSON.parse(localStorage.getItem('simwasdata'))
+
+        var el = document.getElementById("mainTable")
+
+        if (mainTable) {
+            var data = mainTable.main
+            console.log(data)
+
+
+            for (var x = 0; x < data.length; x++) {
+
+                var row = ref.addrow("mainTable")
+                console.log(row)
+                for (var y = 0; y < data[x].length - 1; y++) {
+                    row.cells[y].innerText = data[x][y]
+                    row.cells[y].style.backgroundColor = data[x][10]
+                    if (y == 9) {
+                        row.cells[y].style.display = 'none';
+                    }
+                }
+            }
+        }
+    },
 
     view: () => {
 
-
         return m('div',
-            ref.main == null ? ref.tabHeader() : ref.main
+            ref.main
         )
-
-
-
     }
-
 
 }
 
