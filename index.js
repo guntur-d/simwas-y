@@ -676,7 +676,7 @@ const control = {
                     row.cells[1].innerText = item.rekomendasi
                     row.cells[2].innerText = item.usulanTL
                     row.cells[3].innerText = item.tindakLanjut
-                    ref.role == "pengawas" ? row.cells[4].outerHTML = '<td contenteditable="true" min=0 max=100> </td>' : row.cells[4].innerHTML = item.bobot
+                    row.cells[4].innerHTML = item.bobot
                     row.cells[5].innerText = item.kekuranganTL
                     ref.role == "pengawas" ? row.cells[6].innerHTML = dropdown : row.cells[6].innerHTML = item.status
                     row.cells[7].innerText = item.cttnAuditor
