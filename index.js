@@ -133,8 +133,7 @@ var ref = {
         var oTable = document.getElementById(id);
 
         var rawdata = [...oTable.rows].map(t => [...t.children].map(u => u.innerText))
-        console.log(rawdata)
-
+      
         if (rawdata.length < 3) {
             alert("Anda blm memasukkan Data")
             return null
@@ -152,10 +151,10 @@ var ref = {
     idAddRow: null,
 
     addrow: (id) => {
-        console.log(id)
+     //   console.log(id)
 
         if (typeof (id) !== "string" || id == undefined) { id = ref.idAddRow }
-        console.log(id)
+     //   console.log(id)
         var table = document.getElementById(id)
         //  console.log(table)
         if (table) {
@@ -212,16 +211,13 @@ var ref = {
         }
 
     },
-
-    // data.temuan.replace(/\s/g, '') !== '' 
+ 
     auditorSave: () => {
 
         var idCase = ref.ObjectID('Case')
 
         var data = ref.getDataTab('auditorTable')
-
-        console.log(data)
-
+ 
         if (data.length == 0) return
 
         for (var x = 0; x < data.length; x++) {
@@ -245,7 +241,7 @@ var ref = {
             for (var x = 0; x < data.length; x++) {
                 data[x].push(idCase)
                 var row = ref.addrow("mainTable")
-                console.log(row)
+                
                 for (var y = 0; y < data[x].length; y++) {
                     row.cells[y].innerText = data[x][y]
                     row.cells[y].style.backgroundColor = '#ffef82'
