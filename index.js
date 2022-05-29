@@ -1,4 +1,4 @@
-
+const Rupiah = value => currency(value, { symbol: 'Rp', decimal: ',', separator: '.' });
 var ref = {
     state: {},
 
@@ -10,7 +10,7 @@ var ref = {
         { type: 'text', title: 'Rekomendasi', wordWrap: true },
         { type: 'text', title: 'Usulan Tindak Lanjut', wordWrap: true },
         { type: 'text', title: 'Tindak Lanjut', wordWrap: true },
-        { type: 'text', title: 'Bobot', wordWrap: true, width: 80 },
+        { type: 'text', title: 'Nominal', wordWrap: true, width: 80 },
         { type: 'text', title: 'Kekurangan TL', wordWrap: true },
         { type: 'text', title: 'Status', wordWrap: true },
         { type: 'text', title: 'Cttn Auditor', wordWrap: true },
@@ -21,6 +21,24 @@ var ref = {
     role: null,
     ObjectID: (str) => {
         return str + (Math.floor(Date.now() / 1000)).toString(16)
+    },
+
+    polos: (dataStr) => {
+
+
+
+        var numString = dataStr.slice(2)
+        var y = Math.round(numString.length / 3)
+
+        if (y < 1) {
+            y = 1
+        }
+        for (var z = 1; z < y; z++) {
+            numString = numString.replace('.', '')
+        }
+        numString = numString.replace(',', '.')
+        return Number(numString)
+
     },
 
 
@@ -93,17 +111,16 @@ var ref = {
 
             ref.main = m.trust(ref.tabCreator('mainTable'))
 
-
         }
 
     },
-    controlText:null,
+    controlText: null,
     userlogout: () => {
-        
+
         ref.userlogged = null
         ref.role = null
         ref.controlText = "Please Login"
-   
+
     },
 
     userlogin: () => {
@@ -113,14 +130,14 @@ var ref = {
         var onSubmit = (e) => {
             e.preventDefault()
             var el = document.getElementById(id)
-          //  console.log(el.value)
+            //  console.log(el.value)
             ref.userlogged = el.value
-            ref.users.map(item=>{
-                if(item.user == ref.userlogged){ref.role=item.role}
+            ref.users.map(item => {
+                if (item.user == ref.userlogged) { ref.role = item.role }
             })
             ref.state.user = null
             ref.controlText = null
-          
+
         }
 
 
@@ -128,12 +145,12 @@ var ref = {
         ), "Pilih User", id, onSubmit)
     },
 
-  
+
     getDataTab: (id) => {
         var oTable = document.getElementById(id);
 
         var rawdata = [...oTable.rows].map(t => [...t.children].map(u => u.innerText))
-      
+
         if (rawdata.length < 3) {
             alert("Anda blm memasukkan Data")
             return null
@@ -143,18 +160,23 @@ var ref = {
         for (var x = 2; x < rawdata.length; x++) {
             data.push(rawdata[x])
         }
+        for (var x = 0; x < data.length; x++) {
 
-
+            for (var y = 0; y < data[x].length; y++) {
+                y == 4 ? data[x][y] = ref.polos(data[x][y]) : false
+            }
+        }
+        console.log(data)
         return data
     },
 
     idAddRow: null,
 
     addrow: (id) => {
-     //   console.log(id)
+        //   console.log(id)
 
         if (typeof (id) !== "string" || id == undefined) { id = ref.idAddRow }
-     //   console.log(id)
+        //   console.log(id)
         var table = document.getElementById(id)
         //  console.log(table)
         if (table) {
@@ -189,8 +211,8 @@ var ref = {
             if (id == ref.tabReviewID && ref.role == "pengawas") {
                 for (var x = 0; x < 10; x++) {
 
-                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
-                        : tds += '<td contenteditable="false"  style="background:grey;"> </td>'
+                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 6 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
+                        : x == 6 ? tds += '<td class = "nilaiTL" contenteditable="false"  style="background:grey;"> </td>' : tds += '<td contenteditable="false"  style="background:grey;"> </td>'
 
                     row.innerHTML = tds
 
@@ -199,7 +221,8 @@ var ref = {
             if (id == "mainTable") {
                 for (var x = 0; x < 10; x++) {
 
-                    tds += '<td></td>'
+                    x == 4 ? tds += '<td></td>' :
+                        tds += '<td></td>'
 
                     row.innerHTML = tds
 
@@ -211,22 +234,26 @@ var ref = {
         }
 
     },
- 
+
     auditorSave: () => {
 
         var idCase = ref.ObjectID('Case')
 
         var data = ref.getDataTab('auditorTable')
- 
+        console.log(data)
+
         if (data.length == 0) return
 
         for (var x = 0; x < data.length; x++) {
             var del = false
             for (var y = 0; y < 9; y++) {
-                if (data[x][y].replace(/\s/g, '') !== '') {
-                    del = false
-                    break
-                } else { del = true }
+                if (y !== 4) {
+                    if (data[x][y].replace(/\s/g, '') !== '') {
+                        del = false
+                        break
+                    } else { del = true }
+                }
+
             }
             if (del == true) {
                 data.splice(x, 1)
@@ -237,11 +264,12 @@ var ref = {
 
 
         if (data) {
+            console.log(data)
 
             for (var x = 0; x < data.length; x++) {
                 data[x].push(idCase)
                 var row = ref.addrow("mainTable")
-                
+
                 for (var y = 0; y < data[x].length; y++) {
                     row.cells[y].innerText = data[x][y]
                     row.cells[y].style.backgroundColor = '#ffef82'
@@ -291,6 +319,7 @@ var ref = {
         var itemArr = []
         var temuan, rekomendasi, usulanTL, tindakLanjut, kekuranganTL
         temuan = rekomendasi = usulanTL = tindakLanjut = kekuranganTL = ''
+
         console.log(ref.dashData)
 
         ref.dashNumber.kasus.map(item => {
@@ -303,6 +332,7 @@ var ref = {
                     data.usulanTL.replace(/\s/g, '') !== '' ? usulanTL += data.usulanTL + ", " : false
                     data.tindakLanjut.replace(/\s/g, '') !== '' ? tindakLanjut += data.tindakLanjut + ", " : false
                     data.kekuranganTL.replace(/\s/g, '') !== '' ? kekuranganTL += data.kekuranganTL + ", " : false
+
                 }
             })
 
@@ -373,7 +403,7 @@ var ref = {
                 }
             }
         }
-
+        ref.dashUpdate()
         ref.localStorageSave()
 
         ref.state.control = null
@@ -402,8 +432,22 @@ var ref = {
 
         localStorage.setItem('simwasdata', JSON.stringify(obj));
     },
+    getNilaiDone: () => {
 
+        var oTable = document.getElementById('mainTable');
+        var data = []
+        var Obj = {}
+        var rows = oTable.rows
+        for (var x = 0; x < oTable.rows.length; x++) {
+            if (rows[x].cells[4].style.backgroundColor == 'rgb(184, 241, 176)') {
+                Obj = { color: rows[x].cells[4].style.backgroundColor, nilai: rows[x].cells[4].innerText }
+                data.push(Obj)
+            }
 
+        }
+        return data
+
+    },
     dashComp: null,
     dashData: [],
     dashNumber: {},
@@ -419,7 +463,7 @@ var ref = {
         if (el && el.rows.length > 2) {
             var data = ref.getDataTab('mainTable')
 
-            //  console.log(data)
+        //    console.log(data)
 
             var Obj = {}
 
@@ -438,7 +482,7 @@ var ref = {
                         Object.assign(Obj, { tindakLanjut: i })
                     }
                     if (idx == 4) {
-                        Object.assign(Obj, { bobot: i })
+                        Object.assign(Obj, { nilai: i })
                     }
                     if (idx == 5) {
                         Object.assign(Obj, { kekuranganTL: i })
@@ -470,32 +514,49 @@ var ref = {
 
             var temuanNum, reccNum, uTLNum, TLNum, KTLNum, statusNum
             temuanNum = reccNum = uTLNum = TLNum = KTLNum = statusNum = 0
+            var nilai = 0
+            var nilaiDone = 0
+        //    console.log(ref.dashData)
             ref.dashData.map(item => {
                 item.temuan.replace(/\s/g, '') !== '' ? temuanNum++ : false
                 item.rekomendasi.replace(/\s/g, '') !== '' ? reccNum++ : false
                 item.usulanTL.replace(/\s/g, '') !== '' ? uTLNum++ : false
                 item.tindakLanjut.replace(/\s/g, '') !== '' ? TLNum++ : false
+                item.nilai > 0 ? nilai += item.nilai : false
                 item.kekuranganTL.replace(/\s/g, '') !== '' ? KTLNum++ : false
                 item.status == 'Selesai Ditindaklanjuti' ? statusNum++ : false
 
             })
 
-            ref.dashNumber = { kasus: unique, temuan: temuanNum, rekomendasi: reccNum, usulanTL: uTLNum, tindakLanjut: TLNum, kekuranganTL: KTLNum, status: statusNum }
-            // console.log(ref.dashNumber)
+            var nDone = ref.getNilaiDone()
+            nDone.map(item => {
+                nilaiDone += ref.polos(item.nilai)
+            })
 
-            var dashEl = document.getElementById('dashboardContent')
-            if (dashEl) {
-                var content = '<p class="subtitle">' + ref.dashNumber.kasus.length + ' Kasus</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.temuan + ' Temuan</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.rekomendasi + ' Rekomendasi</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.usulanTL + ' Usulan Tindak Lanjut</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.tindakLanjut + ' Ditindaklanjuti</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.kekuranganTL + ' Kekurangan Tindak Lanjut</p>'
-                content += '<p class="subtitle">' + ref.dashNumber.status + ' Selesai Ditindaklanjuti</p>'
+           
+            ref.dashNumber = { kasus: unique, temuan: temuanNum, rekomendasi: reccNum, usulanTL: uTLNum, tindakLanjut: TLNum, kekuranganTL: KTLNum, status: statusNum, nilai: nilai, nilaiDone: nilaiDone }
+        
+            content = '<div class="columns"><div class="column">'
+            content += '<p class="subtitle">' + ref.dashNumber.kasus.length + ' Kasus</p>'
+            content += '<p class="subtitle">' + ref.dashNumber.temuan + ' Temuan</p>'
+            content += '<p class="subtitle">' + ref.dashNumber.rekomendasi + ' Rekomendasi</p>'
+            content += '<p class="subtitle">' + ref.dashNumber.usulanTL + ' Usulan Tindak Lanjut</p>'
+            content += '<p class="subtitle">' + ref.dashNumber.tindakLanjut + ' Ditindaklanjuti</p>'
+            content += '</div><div class="column">'
+            content += '<p class="subtitle">' + ref.dashNumber.kekuranganTL + ' Kekurangan Tindak Lanjut</p>'
 
-                dashEl.innerHTML = content
+            content += '<p class="subtitle">' + ref.dashNumber.status + ' Selesai Ditindaklanjuti</p>'
 
-            }
+            content += '<p><span ><strong style="color:#FFEF82;">' + Rupiah(ref.dashNumber.nilai).format()  + '</strong></span><span class="subtitle"> Total Nominal Kasus</span></p><br>'
+
+            content += '<p><span><strong style="color:#b8f1b0;">' + Rupiah(ref.dashNumber.nilaiDone).format()  + '</strong></span><span class="subtitle">  Total Nominal Kasus Selesai Ditindaklanjuti</span></p>'
+            content += '<p><span><strong style="color:#F32424;">' + Rupiah(ref.dashNumber.nilai-ref.dashNumber.nilaiDone).format()  + '</strong></span><span class="subtitle">  Sisa Nominal Kasus Belum  Ditindaklanjuti</span></p>'
+            content += '</div></div>'
+
+            ref.dashComp = m.trust(content)
+            ref.format()
+
+
         }
     },
 
@@ -538,8 +599,6 @@ var ref = {
     caseClose: false,
 
     saveReview: (e) => {
-        //   e.preventDefault()
-
 
         var reviewTab = document.getElementById(ref.tabReviewID)
         if (reviewTab) {
@@ -552,9 +611,7 @@ var ref = {
 
                     if (reviewTab.rows[x].cells[6].innerText.replace(/\s/g, '') !== '') {
                         reviewTab.rows[x].cells[6].innerText = el.options[el.selectedIndex].text
-
                     }
-
                 }
 
                 el.options[el.selectedIndex].text == "Selesai Ditindaklanjuti" ? ref.caseClose = true : false
@@ -564,10 +621,14 @@ var ref = {
             for (var x = 0; x < data.length; x++) {
                 var del = false
                 for (var y = 0; y < 9; y++) {
-                    if (data[x][y].replace(/\s/g, '') !== '') {
-                        del = false
-                        break
-                    } else { del = true }
+
+                    if (y !== 4) {
+                        if (data[x][y].replace(/\s/g, '') !== '') {
+                            del = false
+                            break
+                        } else { del = true }
+                    }
+
                 }
                 if (del == true) {
                     data.splice(x, 1)
@@ -597,6 +658,7 @@ var ref = {
 
                 }
             }
+
             for (var x = 0; x < data.length; x++) {
                 var newrow = mainTab.insertRow(ref.mainTabRowIndex + x)
                 for (var i = 0; i < 10; i++) {
@@ -609,13 +671,12 @@ var ref = {
                     if (i == 9) {
                         newcell.style.display = 'none'
                     }
+                    if (i == 4) newcell.innerText = Rupiah(newcell.innerText).format();
                 }
-
-
 
             }
 
-
+            ref.dashUpdate()
 
         }
 
@@ -625,7 +686,35 @@ var ref = {
         ref.tabReviewID = null
         ref.state.control = null
         ref.mainTabRowIndex = null
+
+
+
         m.redraw()
+
+
+    },
+
+    format: () => {
+        if (AutoNumeric.getAutoNumericElement(".nilaiTL") === null) {
+            new AutoNumeric.multiple('.nilaiTL', {
+                currencySymbol: ' Rp',
+                decimalCharacter: ',',
+                digitGroupSeparator: '.',
+                unformatOnSubmit: true
+            })
+        };
+
+        var el=document.getElementById("mainTable")
+        
+        if(el){
+            var rows=el.rows
+             for(var x=2; x<rows.length; x++){
+                if(rows[x].cells[4].innerText=="Rp0,00")rows[x].cells[4].innerText=""
+             }
+             
+             
+        }
+
 
 
     }
@@ -662,7 +751,7 @@ const control = {
                             x < 4 || x == 7 ? tds += '<td contenteditable="true" > </td>'
                                 : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
                         }
- 
+
 
                         row.innerHTML = tds
 
@@ -672,7 +761,8 @@ const control = {
                     row.cells[1].innerText = item.rekomendasi
                     row.cells[2].innerText = item.usulanTL
                     row.cells[3].innerText = item.tindakLanjut
-                    row.cells[4].innerHTML = item.bobot
+                    row.cells[4].innerHTML = item.nilai
+                    ref.role=="pengawas" ? row.cells[4].classList.add("nilaiTL") : row.cells[4].innerHTML = Rupiah(row.cells[4].innerHTML).format()
                     row.cells[5].innerText = item.kekuranganTL
                     ref.role == "pengawas" ? row.cells[6].innerHTML = dropdown : row.cells[6].innerHTML = item.status
                     row.cells[7].innerText = item.cttnAuditor
@@ -695,21 +785,21 @@ const control = {
                 }
 
             }
+
+
+            ref.format()
+
         }
 
-       
 
-     
 
     },
 
-   
 
 
- 
 
     view: () => {
-    
+
         return m(".div",
 
             ref.role == null ? ref.controlText : ref.role == 'auditor' ?
@@ -755,13 +845,13 @@ const user = {
 
 const dashboard = {
 
-    omcreate: ref.dashUpdate,
+    oninit: ref.dashUpdate,
 
     onupdate: ref.dashUpdate,
 
     view: () => {
 
-        return m('div', { id: "dashboardContent" })
+        return m('div', ref.dashComp)
 
     }
 
@@ -770,6 +860,11 @@ const dashboard = {
 const main = {
 
 
+    onupdate: () => {
+
+        ref.format
+     
+    },
     oninit: () => {
         ref.main == null ? ref.tabHeader() : null
 
@@ -781,6 +876,7 @@ const main = {
         var el = document.getElementById("mainTable")
 
         if (mainTable) {
+           
             var data = mainTable.main
             console.log(data)
 
@@ -795,8 +891,13 @@ const main = {
                     if (y == 9) {
                         row.cells[y].style.display = 'none';
                     }
+                    if (y == 4) {
+                        row.cells[y].innerText = Rupiah(row.cells[y].innerText).format();
+                    }
                 }
             }
+
+
         }
     },
 
