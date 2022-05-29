@@ -113,14 +113,14 @@ var ref = {
         var onSubmit = (e) => {
             e.preventDefault()
             var el = document.getElementById(id)
-            console.log(el.value)
+          //  console.log(el.value)
             ref.userlogged = el.value
             ref.users.map(item=>{
                 if(item.user == ref.userlogged){ref.role=item.role}
             })
             ref.state.user = null
             ref.controlText = null
-          //  m.redraw()
+          
         }
 
 
@@ -713,11 +713,7 @@ const control = {
  
 
     view: () => {
-        console.log(ref.role)
-
-        console.log(ref.userlogged)
-     
-
+    
         return m(".div",
 
             ref.role == null ? ref.controlText : ref.role == 'auditor' ?
