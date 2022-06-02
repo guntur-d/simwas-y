@@ -5,16 +5,17 @@ var ref = {
     userlogged: null,
     main: null,
     data: null,
-    columns: [
-        { type: 'text', title: 'Temuan', wordWrap: true },
-        { type: 'text', title: 'Rekomendasi', wordWrap: true },
-        { type: 'text', title: 'Usulan Tindak Lanjut', wordWrap: true },
-        { type: 'text', title: 'Tindak Lanjut', wordWrap: true },
-        { type: 'text', title: 'Nominal', wordWrap: true, width: 80 },
-        { type: 'text', title: 'Kekurangan TL', wordWrap: true },
-        { type: 'text', title: 'Status', wordWrap: true },
-        { type: 'text', title: 'Cttn Auditor', wordWrap: true },
-        { type: 'text', title: 'Cttn Pengawas', wordWrap: true },
+    columns: [                                                                      // 0 ID
+        { type: 'text', title: 'Temuan', wordWrap: true },                          // 1
+        { type: 'text', title: 'Nominal', wordWrap: true, width: 80 },              // 2
+        { type: 'text', title: 'Rekomendasi', wordWrap: true },                     // 3
+        { type: 'text', title: 'Usulan Tindak Lanjut', wordWrap: true },            // 4  
+        { type: 'text', title: 'Tindak Lanjut', wordWrap: true },                   // 5
+        { type: 'text', title: 'Nominal', wordWrap: true, width: 80 },              // 6
+        { type: 'text', title: 'Kekurangan TL', wordWrap: true },                   // 7
+        { type: 'text', title: 'Status', wordWrap: true },                          // 8
+        { type: 'text', title: 'Cttn Auditor', wordWrap: true },                    // 9
+        { type: 'text', title: 'Cttn Pengawas', wordWrap: true },                   // 10
 
     ],
     users: [{ user: 'sysadmin', role: 'sysadmin' }, { user: 'Auditor01', role: 'auditor' }, { user: 'Dalnis01', role: 'auditor' }, { user: 'PengawasMutu01', role: 'pengawas' }],
@@ -24,8 +25,6 @@ var ref = {
     },
 
     polos: (dataStr) => {
-
-
 
         var numString = dataStr.slice(2)
         var y = Math.round(numString.length / 3)
@@ -52,7 +51,7 @@ var ref = {
             tabel += "<th><div style='resize: both;'>" + col[x] + "</div></th>"
         }
         tabel += '</tr></thead><tbody><tr>'
-        for (var x = 1; x < 10; x++) {
+        for (var x = 1; x < 11; x++) {
             tabel += "<td><div style='resize: both; text-align:center;'>" + x + "</div></td>"
         }
         tabel += '</tr></tbody></table></div>'
@@ -120,6 +119,7 @@ var ref = {
         ref.userlogged = null
         ref.role = null
         ref.controlText = "Please Login"
+        ref.dashUpdate()
 
     },
 
@@ -137,6 +137,7 @@ var ref = {
             })
             ref.state.user = null
             ref.controlText = null
+            ref.dashUpdate()
 
         }
 
@@ -163,8 +164,29 @@ var ref = {
         for (var x = 0; x < data.length; x++) {
 
             for (var y = 0; y < data[x].length; y++) {
-                y == 4 ? data[x][y] = ref.polos(data[x][y]) : false
+                y == 1 || y == 5 ? data[x][y] = ref.polos(data[x][y]) : false
             }
+        }
+
+        console.log(data)
+        for (var x = 0; x < data.length; x++) {
+            var del = false
+            for (var y = 0; y < 10; y++) {
+
+                if (typeof (data[x][y]) == 'string') {
+                    if (data[x][y].replace(/\s/g, '') !== '') {
+                        del = false
+                        break
+                    } else { del = true }
+                }
+
+
+            }
+            if (del == true) {
+                data.splice(x, 1)
+                x--
+            }
+
         }
         console.log(data)
         return data
@@ -180,54 +202,61 @@ var ref = {
         var table = document.getElementById(id)
         //  console.log(table)
         if (table) {
+            ref.autoNumID = ref.ObjectID('')
             var tbody = table.getElementsByTagName("tbody")[0]
             var len = tbody.rows.length
             var row = tbody.insertRow(len)
 
             var tds = ''
             if (id == "auditorTable") {
-                for (var x = 0; x < 9; x++) {
+                for (var x = 1; x < 11; x++) {
 
-                    x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="false" style="background:grey;" ></td>'
-                        : tds += '<td contenteditable="true"></td>'
+                    x < 9 && x > 6 || x == 10 ? tds += '<td contenteditable="false" style="background:grey;" ></td>'
+                        : x == 2 || x == 6 ? tds += '<td class = "' + ref.autoNumID + '" contenteditable="true"  > </td>'
+                            : tds += '<td contenteditable="true"></td>'
 
                     row.innerHTML = tds
 
                 }
+
             }
 
             if (id == ref.tabReviewID && ref.role == "auditor") {
-                for (var x = 0; x < 10; x++) {
+                for (var x = 1; x < 12; x++) {
 
-                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 7 && x > 3 || x == 8 ?
-                        tds += '<td contenteditable="false" style="background:grey;"></td>' : tds += '<td contenteditable="true"></td>'
+                    x == 11 ? tds += '<td style="display:none;">' + id + '</td>' : x < 9 && x > 6 || x == 10 ?
+                        tds += '<td contenteditable="false" style="background:grey;"></td>' : x == 2 || x == 6 ? tds += '<td class = "' + ref.autoNumID + '" contenteditable="true"> </td>'
+                            : tds += '<td contenteditable="true"></td>'
 
 
                     row.innerHTML = tds
 
                 }
+
             }
 
             if (id == ref.tabReviewID && ref.role == "pengawas") {
                 for (var x = 0; x < 10; x++) {
 
-                    x == 9 ? tds += '<td style="display:none;">' + id + '</td>' : x < 6 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
-                        : x == 6 ? tds += '<td class = "nilaiTL" contenteditable="false"  style="background:grey;"> </td>' : tds += '<td contenteditable="false"  style="background:grey;"> </td>'
+                    x == 10 ? tds += '<td style="display:none;">' + id + '</td>' : x < 6 && x > 3 || x == 9 ? tds += '<td contenteditable="true" > </td>'
+                        : x == 5 ? tds += '<td class = "' + ref.autoNumID + '" contenteditable="false"  style="background:grey;"> </td>' : tds += '<td contenteditable="false"  style="background:grey;"> </td>'
 
                     row.innerHTML = tds
 
                 }
+
             }
             if (id == "mainTable") {
-                for (var x = 0; x < 10; x++) {
+                for (var x = 0; x < 11; x++) {
 
-                    x == 4 ? tds += '<td></td>' :
-                        tds += '<td></td>'
+                    tds += '<td></td>'
 
                     row.innerHTML = tds
 
                 }
             }
+
+            ref.format()
 
             return row
 
@@ -244,23 +273,7 @@ var ref = {
 
         if (data.length == 0) return
 
-        for (var x = 0; x < data.length; x++) {
-            var del = false
-            for (var y = 0; y < 9; y++) {
-                if (y !== 4) {
-                    if (data[x][y].replace(/\s/g, '') !== '') {
-                        del = false
-                        break
-                    } else { del = true }
-                }
 
-            }
-            if (del == true) {
-                data.splice(x, 1)
-                x--
-            }
-
-        }
 
 
         if (data) {
@@ -269,17 +282,19 @@ var ref = {
             for (var x = 0; x < data.length; x++) {
                 data[x].push(idCase)
                 var row = ref.addrow("mainTable")
+                console.log(row)
+                console.log(data)
 
                 for (var y = 0; y < data[x].length; y++) {
-                    row.cells[y].innerText = data[x][y]
+
                     row.cells[y].style.backgroundColor = '#ffef82'
-                    if (y == 9) {
-                        row.cells[y].style.display = 'none';
-                    }
+                    y == 1 || y == 5 ? row.cells[y].innerText = Rupiah(data[x][y]).format() : row.cells[y].innerText = data[x][y]
+                    y == 10 ? row.cells[y].style.display = 'none' : null
+
                 }
             }
 
-
+            ref.dashUpdate()
             ref.localStorageSave()
 
             ref.state.control = null
@@ -321,6 +336,7 @@ var ref = {
         temuan = rekomendasi = usulanTL = tindakLanjut = kekuranganTL = ''
 
         console.log(ref.dashData)
+        console.log(ref.dashNumber)
 
         ref.dashNumber.kasus.map(item => {
             ref.dashData.map(data => {
@@ -337,7 +353,7 @@ var ref = {
             })
 
             itemArr.push([item, temuan.slice(0, -2), rekomendasi.slice(0, -2), usulanTL.slice(0, -2), tindakLanjut.slice(0, -2), kekuranganTL.slice(0, -2)])
-            temuan = rekomendasi = usulanTL = tindakLanjut = ''
+            temuan = rekomendasi = usulanTL = tindakLanjut = kekuranganTL = ''
         })
         return itemArr
     },
@@ -348,7 +364,7 @@ var ref = {
 
 
         var itemArr = ref.getCases()
-
+        console.log(itemArr)
 
         var content = '<div class="box">'
         content += '<table class="table is-bordered"><thead><tr>'
@@ -395,7 +411,7 @@ var ref = {
         if (mainTableEl) {
             var len = mainTableEl.rows.length
             for (var x = 2; x < len; x++) {
-                if (mainTableEl.rows[x].cells[9].innerText == ref.idCase) {
+                if (mainTableEl.rows[x].cells[10].innerText == ref.idCase) {
                     mainTableEl.deleteRow(x)
                     x--
                     len--
@@ -403,6 +419,7 @@ var ref = {
                 }
             }
         }
+
         ref.dashUpdate()
         ref.localStorageSave()
 
@@ -430,17 +447,31 @@ var ref = {
 
         var obj = { main: data }
 
+        // localStorage.setItem('simwasdata', null);
         localStorage.setItem('simwasdata', JSON.stringify(obj));
     },
-    getNilaiDone: () => {
+    getNilai: (condition) => {
+        var cnum, bcol
+
+        if (condition == 'done') {
+            cnum = 5
+            bcol = ['rgb(184, 241, 176)']
+
+        } else if (condition == 'temuan') {
+            cnum = 1
+            bcol = ['rgb(121, 218, 232)', 'rgb(255, 239, 130)', 'rgb(184, 241, 176)']
+
+        }
+
 
         var oTable = document.getElementById('mainTable');
         var data = []
         var Obj = {}
         var rows = oTable.rows
+
         for (var x = 0; x < oTable.rows.length; x++) {
-            if (rows[x].cells[4].style.backgroundColor == 'rgb(184, 241, 176)') {
-                Obj = { color: rows[x].cells[4].style.backgroundColor, nilai: rows[x].cells[4].innerText }
+            if (bcol.includes(rows[x].cells[cnum].style.backgroundColor)) {
+                Obj = { nilai: rows[x].cells[cnum].innerText }
                 data.push(Obj)
             }
 
@@ -448,10 +479,13 @@ var ref = {
         return data
 
     },
+
+
     dashComp: null,
     dashData: [],
     dashNumber: {},
     dashUpdate: () => {
+        ref.dashComp = null
 
         ref.dashData = []
 
@@ -463,60 +497,35 @@ var ref = {
         if (el && el.rows.length > 2) {
             var data = ref.getDataTab('mainTable')
 
-        //    console.log(data)
+            console.log(data)
 
             var Obj = {}
-
+            var keys = ['temuan', 'ntemuan', 'rekomendasi', 'usulanTL', 'tindakLanjut', 'nilai', 'kekuranganTL', 'status', 'cttnAuditor', 'cttnPengawas', 'id']
             data.map(item => {
                 item.map((i, idx) => {
-                    if (idx == 0) {
-                        Object.assign(Obj, { temuan: i })
-                    }
-                    if (idx == 1) {
-                        Object.assign(Obj, { rekomendasi: i })
-                    }
-                    if (idx == 2) {
-                        Object.assign(Obj, { usulanTL: i })
-                    }
-                    if (idx == 3) {
-                        Object.assign(Obj, { tindakLanjut: i })
-                    }
-                    if (idx == 4) {
-                        Object.assign(Obj, { nilai: i })
-                    }
-                    if (idx == 5) {
-                        Object.assign(Obj, { kekuranganTL: i })
-                    }
-                    if (idx == 6) {
-                        Object.assign(Obj, { status: i })
-                    }
-                    if (idx == 7) {
-                        Object.assign(Obj, { cttnAuditor: i })
-                    }
-                    if (idx == 8) {
-                        Object.assign(Obj, { cttnPengawas: i })
-                    }
-                    if (idx == 9) {
-                        Object.assign(Obj, { id: i })
-                    }
+
+                    Object.assign(Obj, { [keys[idx]]: i })
 
                 })
                 ref.dashData.push(Obj)
                 Obj = {}
 
             })
+
             var cases = []
             for (var x = 0; x < data.length; x++) {
-                cases.push(data[x][9])
+                cases.push(data[x][10])
             }
 
             var unique = cases.filter(onlyUnique);
 
-            var temuanNum, reccNum, uTLNum, TLNum, KTLNum, statusNum
-            temuanNum = reccNum = uTLNum = TLNum = KTLNum = statusNum = 0
-            var nilai = 0
-            var nilaiDone = 0
-        //    console.log(ref.dashData)
+            var temuanNum, reccNum, uTLNum, TLNum, KTLNum, statusNum, nilai, nilaiDone, nTemuan
+            temuanNum = reccNum = uTLNum = TLNum = KTLNum = statusNum = nilai = nilaiDone = nTemuan = 0
+
+
+
+
+            //    console.log(ref.dashData)
             ref.dashData.map(item => {
                 item.temuan.replace(/\s/g, '') !== '' ? temuanNum++ : false
                 item.rekomendasi.replace(/\s/g, '') !== '' ? reccNum++ : false
@@ -528,17 +537,26 @@ var ref = {
 
             })
 
-            var nDone = ref.getNilaiDone()
+            var nDone = ref.getNilai('done')
+
             nDone.map(item => {
                 nilaiDone += ref.polos(item.nilai)
             })
 
-           
-            ref.dashNumber = { kasus: unique, temuan: temuanNum, rekomendasi: reccNum, usulanTL: uTLNum, tindakLanjut: TLNum, kekuranganTL: KTLNum, status: statusNum, nilai: nilai, nilaiDone: nilaiDone }
-        
+            var nTemu = ref.getNilai('temuan')
+            nTemu.map(item => {
+                nTemuan += ref.polos(item.nilai)
+            })
+
+            console.log(nTemuan, nilaiDone)
+
+
+            ref.dashNumber = { kasus: unique, temuan: temuanNum, nTemuan: nTemuan, rekomendasi: reccNum, usulanTL: uTLNum, tindakLanjut: TLNum, kekuranganTL: KTLNum, status: statusNum, nilai: nilai, nilaiDone: nilaiDone }
+
             content = '<div class="columns"><div class="column">'
             content += '<p class="subtitle">' + ref.dashNumber.kasus.length + ' Kasus</p>'
             content += '<p class="subtitle">' + ref.dashNumber.temuan + ' Temuan</p>'
+
             content += '<p class="subtitle">' + ref.dashNumber.rekomendasi + ' Rekomendasi</p>'
             content += '<p class="subtitle">' + ref.dashNumber.usulanTL + ' Usulan Tindak Lanjut</p>'
             content += '<p class="subtitle">' + ref.dashNumber.tindakLanjut + ' Ditindaklanjuti</p>'
@@ -547,14 +565,16 @@ var ref = {
 
             content += '<p class="subtitle">' + ref.dashNumber.status + ' Selesai Ditindaklanjuti</p>'
 
-            content += '<p><span ><strong style="color:#FFEF82;">' + Rupiah(ref.dashNumber.nilai).format()  + '</strong></span><span class="subtitle"> Total Nominal Kasus</span></p><br>'
-
-            content += '<p><span><strong style="color:#b8f1b0;">' + Rupiah(ref.dashNumber.nilaiDone).format()  + '</strong></span><span class="subtitle">  Total Nominal Kasus Selesai Ditindaklanjuti</span></p>'
-            content += '<p><span><strong style="color:#F32424;">' + Rupiah(ref.dashNumber.nilai-ref.dashNumber.nilaiDone).format()  + '</strong></span><span class="subtitle">  Sisa Nominal Kasus Belum  Ditindaklanjuti</span></p>'
+            content += '<p><span ><strong style="color:#FFEF82;">' + Rupiah(ref.dashNumber.nTemuan).format() + '</strong></span><span class="subtitle"> Total Nominal Kasus</span></p><br>'
+            content += '<p><span ><strong style="color:#ECE5C7;">' + Rupiah(ref.dashNumber.nilai).format() + '</strong></span><span class="subtitle"> Nilai Proses Tindak Lanjut</span></p><br>'
+            content += '<p><span><strong style="color:#b8f1b0;">' + Rupiah(ref.dashNumber.nilaiDone).format() + '</strong></span><span class="subtitle">  Total Nominal Kasus Selesai Ditindaklanjuti</span></p>'
+            content += '<p><span><strong style="color:#F32424;">' + Rupiah(ref.dashNumber.nTemuan - ref.dashNumber.nilaiDone).format() + '</strong></span><span class="subtitle">  Sisa Nominal Kasus Belum  Ditindaklanjuti</span></p>'
             content += '</div></div>'
 
+
             ref.dashComp = m.trust(content)
-            ref.format()
+            m.redraw()
+
 
 
         }
@@ -609,8 +629,8 @@ var ref = {
                 for (var x = 2; x < lenRT; x++) {
 
 
-                    if (reviewTab.rows[x].cells[6].innerText.replace(/\s/g, '') !== '') {
-                        reviewTab.rows[x].cells[6].innerText = el.options[el.selectedIndex].text
+                    if (reviewTab.rows[x].cells[7].innerText.replace(/\s/g, '') !== '') {
+                        reviewTab.rows[x].cells[7].innerText = el.options[el.selectedIndex].text
                     }
                 }
 
@@ -618,24 +638,7 @@ var ref = {
             }
 
             var data = ref.getDataTab(ref.tabReviewID)
-            for (var x = 0; x < data.length; x++) {
-                var del = false
-                for (var y = 0; y < 9; y++) {
 
-                    if (y !== 4) {
-                        if (data[x][y].replace(/\s/g, '') !== '') {
-                            del = false
-                            break
-                        } else { del = true }
-                    }
-
-                }
-                if (del == true) {
-                    data.splice(x, 1)
-                    x--
-                }
-
-            }
 
             console.log(data)
 
@@ -645,13 +648,13 @@ var ref = {
         if (mainTab) {
             var len = mainTab.rows.length
             for (var x = 2; x < len; x++) {
-                if (mainTab.rows[x].cells[9].innerText == ref.idCase) {
+                if (mainTab.rows[x].cells[10].innerText == ref.idCase) {
                     ref.mainTabRowIndex = mainTab.rows[x].rowIndex
                     break
                 }
             }
             for (var x = 2; x < len; x++) {
-                if (mainTab.rows[x].cells[9].innerText == ref.idCase) {
+                if (mainTab.rows[x].cells[10].innerText == ref.idCase) {
                     mainTab.deleteRow(x)
                     x--
                     len--
@@ -661,17 +664,17 @@ var ref = {
 
             for (var x = 0; x < data.length; x++) {
                 var newrow = mainTab.insertRow(ref.mainTabRowIndex + x)
-                for (var i = 0; i < 10; i++) {
+                for (var i = 0; i < 11; i++) {
 
                     var newcell = newrow.insertCell()
                     newcell.innerText = data[x][i]
                     var color = null
                     ref.caseClose ? color = '#b8f1b0' : ref.role == "pengawas" ? color = '#79dae8' : color = '#ffef82'
                     newcell.style.backgroundColor = color
-                    if (i == 9) {
+                    if (i == 10) {
                         newcell.style.display = 'none'
                     }
-                    if (i == 4) newcell.innerText = Rupiah(newcell.innerText).format();
+                    if (i == 1 || i == 5) newcell.innerText = Rupiah(newcell.innerText).format();
                 }
 
             }
@@ -694,28 +697,51 @@ var ref = {
 
     },
 
+    autoNumID: null,
+
     format: () => {
         if (AutoNumeric.getAutoNumericElement(".nilaiTL") === null) {
             new AutoNumeric.multiple('.nilaiTL', {
-                currencySymbol: ' Rp',
+                currencySymbol: 'Rp',
                 decimalCharacter: ',',
                 digitGroupSeparator: '.',
                 unformatOnSubmit: true
             })
         };
+        console.log(ref.autoNumID)
+        console.log(ref.autoNumID.slice(1))
 
-        var el=document.getElementById("mainTable")
-        
-        if(el){
-            var rows=el.rows
-             for(var x=2; x<rows.length; x++){
-                if(rows[x].cells[4].innerText=="Rp0,00")rows[x].cells[4].innerText=""
-             }
-             
-             
+        var el = document.getElementsByClassName(ref.autoNumID)
+        console.log(el)
+        if (el.length > 0) {
+
+            for (var x = 0; x < el.length; x++) {
+
+                new AutoNumeric(el[x], {
+                    currencySymbol: 'Rp',
+                    decimalCharacter: ',',
+                    digitGroupSeparator: '.',
+                    unformatOnSubmit: true
+                })
+            }
+
+
+
         }
 
 
+
+
+        var el = document.getElementById("mainTable")
+
+        if (el) {
+            var rows = el.rows
+            for (var x = 2; x < rows.length; x++) {
+                if (rows[x].cells[5].innerText == "Rp0,00") rows[x].cells[5].innerText = ""
+                if (rows[x].cells[1].innerText == "Rp0,00") rows[x].cells[1].innerText = ""
+            }
+
+        }
 
     }
 
@@ -724,6 +750,7 @@ var ref = {
 
 
 const control = {
+    oninit: ref.autoNumID = null,
 
     onupdate: () => {
 
@@ -742,33 +769,33 @@ const control = {
                     var tds = ''
                     var dropdown = "<div class='select'><select id ='pilihStatus'><option>Belum Selesai</option><option>Selesai Ditindaklanjuti</option></select></div>"
 
-                    for (var x = 0; x < 10; x++) {
+                    for (var x = 1; x < 12; x++) {
 
                         if (ref.role == "pengawas") {
-                            x < 7 && x > 3 || x == 8 ? tds += '<td contenteditable="true" > </td>'
+                            x < 9 && x > 6 || x == 10 ? tds += '<td contenteditable="true" > </td>'
                                 : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
                         } else {
-                            x < 4 || x == 7 ? tds += '<td contenteditable="true" > </td>'
+                            x < 7 || x == 9 ? tds += '<td contenteditable="true" > </td>'
                                 : tds += '<td contenteditable="false"  style="background:grey;" > </td>'
                         }
 
-
                         row.innerHTML = tds
-
                     }
 
                     row.cells[0].innerText = item.temuan
-                    row.cells[1].innerText = item.rekomendasi
-                    row.cells[2].innerText = item.usulanTL
-                    row.cells[3].innerText = item.tindakLanjut
-                    row.cells[4].innerHTML = item.nilai
-                    ref.role=="pengawas" ? row.cells[4].classList.add("nilaiTL") : row.cells[4].innerHTML = Rupiah(row.cells[4].innerHTML).format()
-                    row.cells[5].innerText = item.kekuranganTL
-                    ref.role == "pengawas" ? row.cells[6].innerHTML = dropdown : row.cells[6].innerHTML = item.status
-                    row.cells[7].innerText = item.cttnAuditor
-                    row.cells[8].innerText = item.cttnPengawas
-                    row.cells[9].innerText = ref.tabReviewID
-                    row.cells[9].style.display = 'none'
+                    row.cells[1].innerText = item.ntemuan
+                    ref.role == "auditor" ? row.cells[1].classList.add("nilaiTL") : row.cells[1].innerHTML = Rupiah(row.cells[1].innerHTML).format()
+                    row.cells[2].innerText = item.rekomendasi
+                    row.cells[3].innerText = item.usulanTL
+                    row.cells[4].innerText = item.tindakLanjut
+                    row.cells[5].innerHTML = item.nilai
+                    ref.role == "auditor" ? row.cells[5].classList.add("nilaiTL") : row.cells[5].innerHTML = Rupiah(row.cells[5].innerHTML).format()
+                    row.cells[6].innerText = item.kekuranganTL
+                    ref.role == "pengawas" ? row.cells[7].innerHTML = dropdown : row.cells[7].innerHTML = item.status
+                    row.cells[8].innerText = item.cttnAuditor
+                    row.cells[9].innerText = item.cttnPengawas
+                    row.cells[10].innerText = ref.tabReviewID
+                    row.cells[10].style.display = 'none'
 
                 }
                 len = tbody.rows.length
@@ -779,7 +806,7 @@ const control = {
                 var thisrow = el.rows[len - 1]
 
                 for (var x = 1; x < num; x++) {
-                    thisrow.cells[6].innerHTML = null
+                    thisrow.cells[7].innerHTML = null
                     thisrow = thisrow.previousElementSibling;
 
                 }
@@ -845,9 +872,9 @@ const user = {
 
 const dashboard = {
 
-    oninit: ref.dashUpdate,
+    oninit: ref.dashUpdate(),
 
-    onupdate: ref.dashUpdate,
+    onupdate: ref.dashUpdate(),
 
     view: () => {
 
@@ -863,7 +890,8 @@ const main = {
     onupdate: () => {
 
         ref.format
-     
+        ref.dashUpdate
+
     },
     oninit: () => {
         ref.main == null ? ref.tabHeader() : null
@@ -876,7 +904,7 @@ const main = {
         var el = document.getElementById("mainTable")
 
         if (mainTable) {
-           
+
             var data = mainTable.main
             console.log(data)
 
@@ -887,11 +915,11 @@ const main = {
                 console.log(row)
                 for (var y = 0; y < data[x].length - 1; y++) {
                     row.cells[y].innerText = data[x][y]
-                    row.cells[y].style.backgroundColor = data[x][10]
-                    if (y == 9) {
+                    row.cells[y].style.backgroundColor = data[x][11]
+                    if (y == 10) {
                         row.cells[y].style.display = 'none';
                     }
-                    if (y == 4) {
+                    if (y == 5 || y == 1) {
                         row.cells[y].innerText = Rupiah(row.cells[y].innerText).format();
                     }
                 }
