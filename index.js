@@ -146,7 +146,6 @@ var ref = {
         ), "Pilih User", id, onSubmit)
     },
 
-
     getDataTab: (id) => {
         var oTable = document.getElementById(id);
 
@@ -257,11 +256,8 @@ var ref = {
             }
 
             ref.format()
-
             return row
-
         }
-
     },
 
     auditorSave: () => {
@@ -272,9 +268,6 @@ var ref = {
         console.log(data)
 
         if (data.length == 0) return
-
-
-
 
         if (data) {
             console.log(data)
@@ -300,12 +293,7 @@ var ref = {
             ref.state.control = null
             m.redraw()
         }
-
-
-
-
     },
-
 
     createNewCase: () => {
 
@@ -321,7 +309,6 @@ var ref = {
 
     },
     reviewCase: () => {
-
 
         var content = ref.openCasesTab()
 
@@ -397,8 +384,6 @@ var ref = {
 
     sysAdminDel: (e) => {
 
-
-
         e = e || window.event
 
         var target = e.target;
@@ -444,7 +429,6 @@ var ref = {
 
         }
 
-
         var obj = { main: data }
 
         // localStorage.setItem('simwasdata', null);
@@ -463,7 +447,6 @@ var ref = {
 
         }
 
-
         var oTable = document.getElementById('mainTable');
         var data = []
         var Obj = {}
@@ -479,7 +462,6 @@ var ref = {
         return data
 
     },
-
 
     dashComp: null,
     dashData: [],
@@ -522,10 +504,6 @@ var ref = {
             var temuanNum, reccNum, uTLNum, TLNum, KTLNum, statusNum, nilai, nilaiDone, nTemuan
             temuanNum = reccNum = uTLNum = TLNum = KTLNum = statusNum = nilai = nilaiDone = nTemuan = 0
 
-
-
-
-            //    console.log(ref.dashData)
             ref.dashData.map(item => {
                 item.temuan.replace(/\s/g, '') !== '' ? temuanNum++ : false
                 item.rekomendasi.replace(/\s/g, '') !== '' ? reccNum++ : false
@@ -575,8 +553,6 @@ var ref = {
             ref.dashComp = m.trust(content)
             m.redraw()
 
-
-
         }
     },
 
@@ -612,8 +588,6 @@ var ref = {
         ref.state.control = m.trust(table)
         m.redraw()
 
-
-
     },
     mainTabRowIndex: null,
     caseClose: false,
@@ -638,9 +612,6 @@ var ref = {
             }
 
             var data = ref.getDataTab(ref.tabReviewID)
-
-
-            console.log(data)
 
 
         }
@@ -690,8 +661,6 @@ var ref = {
         ref.state.control = null
         ref.mainTabRowIndex = null
 
-
-
         m.redraw()
 
 
@@ -708,8 +677,7 @@ var ref = {
                 unformatOnSubmit: true
             })
         };
-        console.log(ref.autoNumID)
-        console.log(ref.autoNumID.slice(1))
+      
 
         var el = document.getElementsByClassName(ref.autoNumID)
         console.log(el)
@@ -725,12 +693,7 @@ var ref = {
                 })
             }
 
-
-
         }
-
-
-
 
         var el = document.getElementById("mainTable")
 
